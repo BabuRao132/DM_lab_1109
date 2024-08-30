@@ -57,33 +57,33 @@ int main(int argc, char** argv) {
 	myfile.close();
 	
 	//task5:generating random no.of transactions
-	fstream myfile2("tdx.txt",ios::out);
-	int N=6;   //to limit no.of transactions
-	int n=4;	// to limit max no.of items per transaction
-	int x= rand()%N;
-	int y=rand()%n;
-	string t;
-	char item;
-	cout<<"no.of transactions will be read: "<<x<<endl;
-	cout<<"no.of items per transaction will be read: "<<y<<endl;
-	for(int i=0;i<x;i++){
-		cout<<"enter transtn number"<<endl;
-		cin>>t;
-		myfile2<<t<<" ";
-		for (int j=1;j<=y;j++){
-			cout<<"enter item"<<j<<" ";
-			cin>>item;
-			myfile2<<item<<" ";
-		}
-		myfile2<<endl;
-	}
-	myfile2.close();
-	myfile2.open("tdx.txt",ios::in);
-	while(!myfile2.eof()){
-		getline(myfile2,line);
-		cout<<line<<endl;
-	}
-	myfile2.close();
+	// fstream myfile2("tdx.txt",ios::out);
+	// int N=6;   //to limit no.of transactions
+	// int n=4;	// to limit max no.of items per transaction
+	// int x= rand()%N;
+	// int y=rand()%n;
+	// string t;
+	// char item;
+	// cout<<"no.of transactions will be read: "<<x<<endl;
+	// cout<<"no.of items per transaction will be read: "<<y<<endl;
+	// for(int i=0;i<x;i++){
+	// 	cout<<"enter transtn number"<<endl;
+	// 	cin>>t;
+	// 	myfile2<<t<<" ";
+	// 	for (int j=1;j<=y;j++){
+	// 		cout<<"enter item"<<j<<" ";
+	// 		cin>>item;
+	// 		myfile2<<item<<" ";
+	// 	}
+	// 	myfile2<<endl;
+	// }
+	// myfile2.close();
+	// myfile2.open("tdx.txt",ios::in);
+	// while(!myfile2.eof()){
+	// 	getline(myfile2,line);
+	// 	cout<<line<<endl;
+	// }
+	// myfile2.close();
 	
 	return 0;
 }
