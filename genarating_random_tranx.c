@@ -8,9 +8,9 @@ using namespace std;
 
 int main(int argc, char** argv) {
 	fstream myfile2("tdx.txt",ios::out);
-	int n=4;	// to limit max no.of items per transaction
+	int n=5;	// to limit max no.of items per transaction
 	int x;
-	x=rand()%(7-3+1)+3;
+	x=rand()%(20-3+1)+3;
 	int y;
 	string line;
 	char item;
@@ -22,7 +22,7 @@ int main(int argc, char** argv) {
 			transactionset.insert(item);
 		}
 		for (auto it = transactionset.begin(); it != transactionset.end(); ++it)
-        	myfile2<<*it<<',';
+        	myfile2<<*it<<",";
 		myfile2<<endl;
 	}
 	myfile2.close();
