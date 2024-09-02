@@ -32,6 +32,8 @@ set<set<char>> pruneCandidates(const set<set<char>>& candidates, const set<set<c
             set<char> subset = candidate;
             subset.erase(item);
             if (previousFrequentItemsets.find(subset) == previousFrequentItemsets.end()) {
+												//  set.find()->The function returns an iterator which points to the element which is searched in the set container. 
+												//If the element is not found, then the iterator points to the position just after the last element in the set.         	
                 isValid = false;
                 break;
             }
@@ -83,7 +85,6 @@ vector<set<set<char>>> apriori(const vector<set<char>>& transactions, int minSup
         set<set<char>> candidates = generateCandidates(currentFrequentItemsets, k);
         candidates = pruneCandidates(candidates, currentFrequentItemsets);
         map<set<char>, int> supportCount = calculateSupport(transactions, candidates);
-
         currentFrequentItemsets.clear();
         for (const auto& candidate : candidates) {
             if (supportCount[candidate] >= minSupport) {
