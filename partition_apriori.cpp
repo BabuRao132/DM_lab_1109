@@ -59,7 +59,7 @@ map<set<char>, int> calculateSupport(const vector<set<char>>& part_of_transactio
 }
 
 // Apriori algorithm to find frequent itemsets
-vector<set<set<char>>> apriori(const vector<set<char>>& part_of_transaction, int minSupport) {
+vector<set<set<char>>> apriori(const vector<set<char>>& part_of_transaction, float local_min_sup) {
     vector<set<set<char>>> local_frequentItemsets;
     set<set<char>> currentlocal_frequentItemsets;
 
@@ -72,7 +72,7 @@ vector<set<set<char>>> apriori(const vector<set<char>>& part_of_transaction, int
     }
 
     for (const auto& item : itemCount) {
-        if (item.second >= minSupport) {
+        if (item.second >= local_min_sup) {
             currentlocal_frequentItemsets.insert({item.first});
         }
     }
@@ -87,7 +87,7 @@ vector<set<set<char>>> apriori(const vector<set<char>>& part_of_transaction, int
         map<set<char>, int> supportCount = calculateSupport(part_of_transaction, candidates);
         currentlocal_frequentItemsets.clear();
         for (const auto& candidate : candidates) {
-            if (supportCount[candidate] >= minSupport) {
+            if (supportCount[candidate] >= local_min_sup) {
                 currentlocal_frequentItemsets.insert(candidate);
             }
         }
@@ -102,26 +102,56 @@ vector<set<set<char>>> apriori(const vector<set<char>>& part_of_transaction, int
 }
 
 int main() {
-    vector<set<char>> part_of_transaction;
-    fstream myfile2("tdx.txt",ios::in);
+    
+    fstream myfile2("Z:/mt1109/lab2/tdx.txt",ios::in);
     if(!myfile2){
     	cout<<"error: file opening error\n";
 	}
-//    myfile2.open("tdx.txt",ios::in);
-    string line;
+	string line;
     char c;
     set<char> s;
-    int minSupport,trans_per_part,m;
+    int global_sup,trans_per_part,m,trans_cout;
+    float local_min_sup;
+//    myfile2.open("tdx.txt",ios::in);
     cout<<"Enter minimum support count: \n";
-    cin>>minSupport;
+    cin>>global_sup;
     cout<<"Enter transaction per partion: \n";
     cin>>trans_per_part;
-    vector<vector<set<set<char>>>> local_frequentItemsets;
+    
+    vector<vector<set<set<char>>>> all_local_frequentItemsets;
+    //
+    //myfile2.open("Z:/mt1109/lab2/tdx.txt",ios::in);
+	 if(!myfile2){
+    	cout<<"error in opening the file";
+    	return 100;
+	}
+	vector<set<char>> all_transactions;
+	while(!myfile2.eof()){
+    	s.clear();
+    	getline(myfile2,line);
+    	trans_cout++;
+    	for(int i=0;i<line.length();){
+    		s.insert(line[i]);
+    		i+=2;
+		}
+		all_transactions.push_back(s);
+	}
+	myfile2.close();
+	
+    //vector<set<set<char>>> local_frequentItemsets;
     vector<set<set<char>>> global_frequentItemsets;
+    myfile2.open("Z:/mt1109/lab2/tdx.txt",ios::in);
+    if(!myfile2){
+    	cout<<"error in opening the file";
+    	return 100;
+	}
+		//cal local min suppor
+	local_min_sup=(local_min_sup*1.0)/trans_cout;
+	vector<set<char>> part_of_transaction;
     while(!myfile2.eof()){
+    	part_of_transaction.clear();
     	m=trans_per_part;
     	while(m>0){
-		if(!myfile2.eof()){
     	s.clear();
     	getline(myfile2,line);
     	//cout<<line<<endl;
@@ -133,19 +163,22 @@ int main() {
 //		cout<<i<<endl;
 		part_of_transaction.push_back(s);
 		m--;
-	}
-	}
-	local_frequentItemsets.push_back(apriori(part_of_transaction, minSupport));
+			if(!myfile2.eof()){
+			break;
+			}
 	}
 
+	all_local_frequentItemsets.push_back(apriori(part_of_transaction, local_min_sup));
+	}
+	myfile2.close();
 
-   // vector<set<set<char>>> local_frequentItemsets = apriori(part_of_transaction, minSupport);
+
+   // vector<set<set<char>>> local_frequentItemsets = apriori(part_of_transaction, local_min_sup);
 
     cout << "Frequent itemsets:" << endl;
-    for(auto local_frequentItemset:local_frequentItemsets){
+    for(auto local_frequentItemset:all_local_frequentItemsets){
 	
     for (int i = 0; i < local_frequentItemset.size(); ++i) {
-        cout << "Frequent " << i + 1 << "-itemsets:" << endl;
         for (const auto& itemset : local_frequentItemset[i]) {
             for (const auto& item : itemset) {
                 cout << item << " ";
