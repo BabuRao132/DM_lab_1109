@@ -172,7 +172,7 @@ int main()
 		cout << itemmap.first << " - " << itemmap.second << " - Priority : " <<priority<<"\n" ;
 		itemPriorityMap[itemmap.first] = priority++;
 		struct headerNode * tmp = new headerNode;
-		tmp -> support = itemmap.second;
+		tmp -> support = itemm522ap.second;
 		tmp -> last = nullptr;
 		tmp -> next = nullptr;
 		header_list[itemmap.first] = tmp;
