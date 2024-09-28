@@ -2,9 +2,9 @@
 #include <vector>
 #include <set>
 #include <map>
-#include<string>
+#include <string>
 #include <algorithm>
-#include<fstream>
+#include <fstream>
 
 using namespace std;
 
@@ -32,8 +32,6 @@ set<set<char>> pruneCandidates(const set<set<char>>& candidates, const set<set<c
             set<char> subset = candidate;
             subset.erase(item);
             if (previouslocal_frequentItemsets.find(subset) == previouslocal_frequentItemsets.end()) {
-												//  set.find()->The function returns an iterator which points to the element which is searched in the set container. 
-												//If the element is not found, then the iterator points to the position just after the last element in the set.         	
                 isValid = false;
                 break;
             }
@@ -101,92 +99,110 @@ vector<set<set<char>>> apriori(const vector<set<char>>& part_of_transaction, flo
     return local_frequentItemsets;
 }
 
-int main() {
-    
-    fstream myfile2("Z:/mt1109/lab2/tdx.txt",ios::in);
-    if(!myfile2){
-    	cout<<"error: file opening error\n";
-	}
-	string line;
-    char c;
-    set<char> s;
-    int global_sup,trans_per_part,m,trans_cout;
-    float local_min_sup;
-//    myfile2.open("tdx.txt",ios::in);
-    cout<<"Enter minimum support count: \n";
-    cin>>global_sup;
-    cout<<"Enter transaction per partion: \n";
-    cin>>trans_per_part;
-    
-    vector<vector<set<set<char>>>> all_local_frequentItemsets;
-    //
-    //myfile2.open("Z:/mt1109/lab2/tdx.txt",ios::in);
-	 if(!myfile2){
-    	cout<<"error in opening the file";
-    	return 100;
-	}
-	vector<set<char>> all_transactions;
-	while(!myfile2.eof()){
-    	s.clear();
-    	getline(myfile2,line);
-    	trans_cout++;
-    	for(int i=0;i<line.length();){
-    		s.insert(line[i]);
-    		i+=2;
-		}
-		all_transactions.push_back(s);
-	}
-	myfile2.close();
-	
-    //vector<set<set<char>>> local_frequentItemsets;
-    vector<set<set<char>>> global_frequentItemsets;
-    myfile2.open("Z:/mt1109/lab2/tdx.txt",ios::in);
-    if(!myfile2){
-    	cout<<"error in opening the file";
-    	return 100;
-	}
-		//cal local min suppor
-	local_min_sup=(local_min_sup*1.0)/trans_cout;
-	vector<set<char>> part_of_transaction;
-    while(!myfile2.eof()){
-    	part_of_transaction.clear();
-    	m=trans_per_part;
-    	while(m>0){
-    	s.clear();
-    	getline(myfile2,line);
-    	//cout<<line<<endl;
-    	for(int i=0;i<line.length();){
-    		s.insert(line[i]);
-    		i+=2;
-		}
-//		for(auto i:s)
-//		cout<<i<<endl;
-		part_of_transaction.push_back(s);
-		m--;
-			if(!myfile2.eof()){
-			break;
-			}
-	}
+// Function to merge local frequent itemsets and calculate global support
+map<set<char>, int> mergeFrequentItemsets(const vector<vector<set<set<char>>>>& all_local_frequentItemsets, const vector<set<char>>& all_transactions) {
+    map<set<char>, int> global_support;
 
-	all_local_frequentItemsets.push_back(apriori(part_of_transaction, local_min_sup));
-	}
-	myfile2.close();
-
-
-   // vector<set<set<char>>> local_frequentItemsets = apriori(part_of_transaction, local_min_sup);
-
-    cout << "Frequent itemsets:" << endl;
-    for(auto local_frequentItemset:all_local_frequentItemsets){
-	
-    for (int i = 0; i < local_frequentItemset.size(); ++i) {
-        for (const auto& itemset : local_frequentItemset[i]) {
-            for (const auto& item : itemset) {
-                cout << item << " ";
+    // Traverse through all local frequent itemsets and calculate support on the entire dataset
+    for (const auto& partition_frequent_itemsets : all_local_frequentItemsets) {
+        for (const auto& level_itemsets : partition_frequent_itemsets) {
+            for (const auto& itemset : level_itemsets) {
+                if (global_support.find(itemset) == global_support.end()) {
+                    // Calculate support for each itemset across all transactions once
+                    global_support[itemset] = 0;
+                    for (const auto& transaction : all_transactions) {
+                        if (includes(transaction.begin(), transaction.end(), itemset.begin(), itemset.end())) {
+                            global_support[itemset]++;
+                        }
+                    }
+                }
             }
-            cout << endl;
+        }
+    }
+
+    return global_support;
+}
+
+
+int main() {
+    ifstream myfile2("tdx.txt");
+    if (!myfile2) {
+        cout << "error: file opening error\n";
+        return 1;
+    }
+
+    string line;
+    set<char> s;
+    int global_sup, trans_per_part, trans_count = 0;
+    float rel_min_sup, local_min_sup;
+
+    cout << "Enter minimum support count: \n";
+    cin >> global_sup;
+    cout << "Enter transaction per partition: \n";
+    cin >> trans_per_part;
+
+    vector<vector<set<set<char>>>> all_local_frequentItemsets;
+    vector<set<char>> all_transactions;
+
+    // Read all transactions from the file
+    while (getline(myfile2, line)) {
+        s.clear();
+        trans_count++;
+        for (int i = 0; i < line.length(); i += 2) { // Assuming items are separated by spaces
+            s.insert(line[i]);
+        }
+        all_transactions.push_back(s);
+    }
+    myfile2.close();
+
+    // Calculate relative and local minimum support
+    rel_min_sup = global_sup * 1.0 / trans_count;
+    local_min_sup = rel_min_sup * trans_per_part;
+
+    // Process transactions in partitions
+    for (int i = 0; i < all_transactions.size(); i += trans_per_part) {
+        vector<set<char>> part_of_transaction;
+
+        // Read one partition at a time
+        for (int j = i; j < i + trans_per_part && j < all_transactions.size(); ++j) {
+            part_of_transaction.push_back(all_transactions[j]);
+        }
+
+        // Print the partition number
+        cout << "Processing Partition " << (i / trans_per_part) + 1 << ":\n";
+
+        // Run Apriori on this partition and store local frequent itemsets
+        all_local_frequentItemsets.push_back(apriori(part_of_transaction, local_min_sup));
+    }
+
+    // Output frequent itemsets for all partitions
+    cout << "\nFrequent itemsets by partition:\n";
+    for (size_t partition = 0; partition < all_local_frequentItemsets.size(); ++partition) {
+        cout << "Partition " << partition + 1 << ":\n";
+        for (const auto& itemset_level : all_local_frequentItemsets[partition]) {
+            for (const auto& itemset : itemset_level) {
+                for (const auto& item : itemset) {
+                    cout << item << " ";
+                }
+                cout << endl;
+            }
         }
         cout << endl;
-    }}
+    }
+
+    // Merge local frequent itemsets and calculate global frequent itemsets
+    map<set<char>, int> global_frequentItemsets = mergeFrequentItemsets(all_local_frequentItemsets, all_transactions);
+
+    // Output global frequent itemsets
+    cout << "\nGlobal frequent itemsets (with support counts):\n";
+    for (const auto& itemset : global_frequentItemsets) {
+        if (itemset.second >= global_sup) {
+            for (const auto& item : itemset.first) {
+                cout << item << " ";
+            }
+            cout << " -> Support: " << itemset.second << endl;
+        }
+    }
 
     return 0;
 }
